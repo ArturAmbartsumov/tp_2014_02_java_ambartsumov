@@ -1,13 +1,18 @@
 package frontend;
 
+import dbService.UserDAOImpl;
+import models.UserDataSet;
 import templater.PageGenerator;
 
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.swing.*;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -18,48 +23,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class Frontend extends HttpServlet {
 
-    public Frontend() {
-        User user1 = new User("Artur", "12345");
-        User user2 = new User("Ivan", "123");
-        userList.add(user1);
-        userList.add(user2);
-    }
-
-    class User {
-        public String name;
-        public String password;
-        public User(String n, String p) {
-            name = n;
-            password = p;
-        }
-        public boolean equals(Object obj) {
-            if(obj == this)
-                return true;
-
-            if(obj == null)
-                return false;
-
-            if(!(getClass() == obj.getClass()))
-                return false;
-            else
-            {
-                User tmp = (User)obj;
-                if(tmp.name.equals(name) && tmp.password.equals(password))
-                    return true;
-                else
-                    return false;
-            }
-        }
-    }
-
-
-    private User currentUser = new User("", "");
-    private ArrayList<User> userList = new ArrayList<User>();
     private AtomicLong userIdGenerator = new AtomicLong();
-    private boolean userChange = false;
     DateFormat formatter = new SimpleDateFormat("HH.mm.ss");
-
-
 
     public String getTime() {
         Date date = new Date();
@@ -74,32 +39,69 @@ public class Frontend extends HttpServlet {
 
         if (request.getPathInfo().equals("/authform")) {
             authForm(request, response, pageVariables);
+            return;
         }
 
-        if (request.getPathInfo().equals("/timer")) {
-            timer(request, response, pageVariables);
+        if (request.getPathInfo().equals("/regform")) {
+            regForm(request, response, pageVariables);
+            return;
         }
 
         if (request.getPathInfo().equals("/userid")) {
             userId(request, response, pageVariables);
+            return;
         }
+
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("text/html;charset=utf-8");
+        response.setStatus(HttpServletResponse.SC_OK);
+        Map<String, Object> pageVariables = new HashMap<>();
+
+        if (request.getPathInfo().equals("/authform")) {
+            authForm(request, response, pageVariables);
+            return;
+        }
+
+        if (request.getPathInfo().equals("/regform")) {
+            regForm(request, response, pageVariables);
+            return;
+        }
+
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 
     private void authForm(HttpServletRequest request,
                           HttpServletResponse response,
                           Map<String, Object> pageVariables) throws ServletException, IOException {
-        User logEndPassword = new User(request.getParameter("login"), request.getParameter("password"));
-        if (logEndPassword.name != null && logEndPassword.password != null) {
-            if (userList.contains(logEndPassword)) {
-                response.sendRedirect("/userid");
+        UserDataSet user = new UserDataSet(request.getParameter("login"),
+                                              request.getParameter("password"));
+        if (user.getUsername() != null && user.getPassword() != null) {
+            try {
+                UserDAOImpl userDAO = new UserDAOImpl();
+                UserDataSet checkUser = userDAO.getUserByNameAndPass(user.getUsername(),
+                                                              user.getPassword());
+                if (checkUser != null) {
+                    HttpSession session = request.getSession();
+                    session.setAttribute("sessionId", userIdGenerator.getAndIncrement());
+                    session.setAttribute("user", checkUser);
+                    response.sendRedirect("/userid");
+                }
+                else {
+                    pageVariables.put("message", "Ошибка: не правильный логин или пароль!!");
+                    response.getWriter().println(PageGenerator.getPage("authform.tml", pageVariables));
+                }
             }
-            else {
-                pageVariables.put("message", "Ошибка: не правильный логин или пароль!!");
-                response.getWriter().println(PageGenerator.getPage("authform.tml", pageVariables));
+            catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null,
+                        e.getMessage(),
+                        "Ошибка 'SQLException' При авторизации",
+                        JOptionPane.WARNING_MESSAGE);
+                response.sendRedirect("/regform");
             }
         }
         else {
@@ -108,26 +110,67 @@ public class Frontend extends HttpServlet {
         }
     }
 
-    private void timer(HttpServletRequest request,
-                       HttpServletResponse response,
-                       Map<String, Object> pageVariables) throws ServletException, IOException {
-        pageVariables.put("refreshPeriod", "1000");
-        pageVariables.put("serverTime", getTime());
-        response.getWriter().println(PageGenerator.getPage("timer.tml", pageVariables));
+    private void regForm(HttpServletRequest request,
+                         HttpServletResponse response,
+                         Map<String,Object> pageVariables) throws ServletException, IOException {
+
+        UserDataSet newUser = new UserDataSet(request.getParameter("login"),
+                                              request.getParameter("email"),
+                                              request.getParameter("password"));
+        if (newUser.getUsername() != null &&
+               newUser.getEmail() != null &&
+               newUser.getPassword() != null) {
+            UserDAOImpl userDAO = new UserDAOImpl();
+            try {
+                UserDataSet checkUser = userDAO.getUserByName(newUser.getUsername());
+                if (checkUser == null) {
+                    userDAO.addUser(newUser);
+                }
+                else {
+                    pageVariables.put("message", "Это имя уже занято!");
+                    response.getWriter().println(PageGenerator.getPage("regform.tml", pageVariables));
+                    return;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null,
+                                              e.getMessage(),
+                                              "Ошибка 'SQLException' При добавлении пользователя",
+                                              JOptionPane.WARNING_MESSAGE);
+                response.sendRedirect("/regform");
+                return;
+            }
+            response.sendRedirect("/authform");
+        }
+        else if(newUser.getUsername() == null ||
+                newUser.getEmail() == null ||
+                newUser.getPassword() == null) {
+            pageVariables.put("message", "Вы заполнили не все поля!");
+            response.getWriter().println(PageGenerator.getPage("regform.tml", pageVariables));
+        }
+        else {
+            pageVariables.put("message", "Заполните форму регистрации");
+            response.getWriter().println(PageGenerator.getPage("regform.tml", pageVariables));
+        }
+
     }
 
     private void userId(HttpServletRequest request,
                         HttpServletResponse response,
                         Map<String, Object> pageVariables) throws ServletException, IOException {
         HttpSession session = request.getSession();
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            userId = userIdGenerator.getAndIncrement();
-            session.setAttribute("userId", userId);
+        UserDataSet user = (UserDataSet) session.getAttribute("user");
+        if (user == null) {
+            pageVariables.put("message", "Вы не авторизированы!");
+
+            pageVariables.put("user", new UserDataSet(0, "0"));
+        } else {
+            pageVariables.put("message", "Вы авторизированы!");
+            pageVariables.put("user", user);
         }
         pageVariables.put("refreshPeriod", "1000");
         pageVariables.put("serverTime", getTime());
-        pageVariables.put("userId", userId);
+        pageVariables.put("session", session);
         response.getWriter().println(PageGenerator.getPage("userid.tml", pageVariables));
     }
 }

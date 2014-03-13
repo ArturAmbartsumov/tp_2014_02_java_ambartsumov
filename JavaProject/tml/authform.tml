@@ -3,7 +3,7 @@
 	<title>Авторизация</title>
 </head>
     <body>
-	    <form action = "/authform" method = "GET">
+	    <form action = "/authform" method = "post">
         <div>
 	        Логин: <input type="text" name="login" />
         </div>
