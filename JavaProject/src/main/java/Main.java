@@ -14,6 +14,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 public class Main {
     public static void main(String[] args) throws Exception {
         Frontend frontend = new Frontend();
+        Thread frontendThread = new Thread(frontend);
 
         Server server = new Server(8080);
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
@@ -26,6 +27,8 @@ public class Main {
         handlers.setHandlers(new Handler[]{resource_handler, context});
         server.setHandler(handlers);
 
+
+        frontendThread.start();
         server.start();
         server.join();
     }

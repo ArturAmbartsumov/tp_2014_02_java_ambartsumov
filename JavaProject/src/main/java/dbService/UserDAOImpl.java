@@ -22,7 +22,7 @@ public class UserDAOImpl implements UserDAO {
             session.save(user);
             session.getTransaction().commit();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Ошибка при добавлении пользователя" + e.getMessage(), "Ошибка при вставке", JOptionPane.WARNING_MESSAGE);
+            System.out.println("Ошибка в функции addUser" + e.getMessage());
             throw e;
         } finally {
             if (session != null && session.isOpen()) {
@@ -41,7 +41,7 @@ public class UserDAOImpl implements UserDAO {
             session.update(user);
             session.getTransaction().commit();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Ошибка при обновлении пользователя" + e.getMessage(), "Ошибка при вставке", JOptionPane.WARNING_MESSAGE);
+            System.out.println("Ошибка в функции updateUser" + e.getMessage());
             throw e;
         } finally {
             if (session != null && session.isOpen()) {
@@ -60,7 +60,7 @@ public class UserDAOImpl implements UserDAO {
             criteria.add(Restrictions.eq("username", user.getUsername()));
             currentUser = (UserDataSet) criteria.uniqueResult();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Ошибка при обновлении пользователя" + e.getMessage(), "Ошибка при вставке", JOptionPane.WARNING_MESSAGE);
+            System.out.println("Ошибка в функции updateUserByName" + e.getMessage());
             throw e;
         } finally {
             if (session != null && session.isOpen()) {
@@ -79,7 +79,7 @@ public class UserDAOImpl implements UserDAO {
             session = HibernateUtil.getSessionFactory().openSession();
             user = (UserDataSet) session.load(UserDataSet.class, user_id);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Ошибка поиска пользователя по id" + e.getMessage(), "Ошибка 'findById'", JOptionPane.WARNING_MESSAGE);
+            System.out.println("Ошибка в функции getUserById" + e.getMessage());
             throw e;
         } finally {
             if (session != null && session.isOpen()) {
@@ -99,7 +99,7 @@ public class UserDAOImpl implements UserDAO {
             criteria.add(Restrictions.eq("username", name));
             user = (UserDataSet) criteria.uniqueResult();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Ошибка поиска пользователя по имени" + e.getMessage(), "Ошибка 'findByNameAndPassword'", JOptionPane.WARNING_MESSAGE);
+            System.out.println("Ошибка в функции getUserByName" + e.getMessage());
             throw e;
         } finally {
             if (session != null && session.isOpen()) {
@@ -109,6 +109,7 @@ public class UserDAOImpl implements UserDAO {
         return user;
     }
 
+    @Override
     public UserDataSet getUserByEmail(String email) throws SQLException {
         Session session = null;
         UserDataSet user = null;
@@ -118,7 +119,7 @@ public class UserDAOImpl implements UserDAO {
             criteria.add(Restrictions.eq("email", email));
             user = (UserDataSet) criteria.uniqueResult();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Ошибка поиска пользователя по имени" + e.getMessage(), "Ошибка 'findByNameAndPassword'", JOptionPane.WARNING_MESSAGE);
+            System.out.println("Ошибка в функции getUserByEmail" + e.getMessage());
             throw e;
         } finally {
             if (session != null && session.isOpen()) {
@@ -128,6 +129,7 @@ public class UserDAOImpl implements UserDAO {
         return user;
     }
 
+    @Override
     public UserDataSet getUserByNameAndPass(String name, String password) throws SQLException {
         Session session = null;
         UserDataSet user = null;
@@ -138,7 +140,7 @@ public class UserDAOImpl implements UserDAO {
                     .add(Restrictions.eq("password", password));
             user = (UserDataSet) criteria.uniqueResult();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Ошибка поиска пользователя по имени" + e.getMessage(), "Ошибка 'findByNameAndPassword'", JOptionPane.WARNING_MESSAGE);
+            System.out.println("Ошибка в функции getUserByNameAndPass " + e.getMessage());
             throw e;
         } finally {
             if (session != null && session.isOpen()) {
@@ -156,7 +158,7 @@ public class UserDAOImpl implements UserDAO {
             session = HibernateUtil.getSessionFactory().openSession();
             users = (ArrayList<UserDataSet>) session.createCriteria(UserDataSet.class).list();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Ошибка получения списка всех пользователей" + e.getMessage(), "Ошибка 'getAll'", JOptionPane.WARNING_MESSAGE);
+            System.out.println("Ошибка в функции getAllUsers" + e.getMessage());
             throw e;
         } finally {
             if (session != null && session.isOpen()) {
@@ -175,7 +177,7 @@ public class UserDAOImpl implements UserDAO {
             session.delete(user);
             session.getTransaction().commit();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Ошибка при удалинии пользователя" + e.getMessage(), "Ошибка при удалении", JOptionPane.WARNING_MESSAGE);
+            System.out.println("Ошибка в функции deleteUser" + e.getMessage());
             throw e;
         } finally {
             if (session != null && session.isOpen()) {
