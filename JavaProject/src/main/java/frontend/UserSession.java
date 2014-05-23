@@ -1,26 +1,25 @@
 package frontend;
 
+import messageSistem.Address;
+import messageSistem.AddressService;
+
 /**
  * Created by artur on 23.05.14.
  */
 public class UserSession {
-    //private Address accountService;
+    private Address accountService;
 
     private String login;
     private String sessionId;
-    private Long userId;
+    private Integer userId;
     private boolean isWrong = false;
     private boolean isError = false;
+    private boolean isEmpty = false;
 
-    public UserSession(String sessionId, String name/*, AddressService addressService*/) {
+    public UserSession(String sessionId, String name, AddressService addressService) {
         this.sessionId = sessionId;
         this.login = name;
-        //this.accountService = addressService.getAccountService();
     }
-
-    /*public Address getAccountService() {
-        return accountService;
-    }*/
 
     public String getLogin(){
         return login;
@@ -30,11 +29,11 @@ public class UserSession {
         return sessionId;
     }
 
-    public Long getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(Integer userId) {
         if (userId == null)
             isWrong = true;
 
@@ -43,6 +42,18 @@ public class UserSession {
 
     public boolean isWrong() {
         return isWrong;
+    }
+
+    public void setWrong(boolean isWrong) {
+        this.isWrong = isWrong;
+    }
+
+    public boolean isEmpty() {
+        return isEmpty;
+    }
+
+    public void setEmpty(boolean isEmpty) {
+        this.isEmpty = isEmpty;
     }
 
     public boolean isError() {
@@ -54,6 +65,6 @@ public class UserSession {
     }
 
     public boolean isAuthorized() {
-        return !isWrong() && !isError() && getUserId() != null;
+        return !isWrong() && !isError() && !isEmpty() && getUserId() != null;
     }
 }

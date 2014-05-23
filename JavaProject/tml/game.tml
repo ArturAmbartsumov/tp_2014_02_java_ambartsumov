@@ -1,6 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>Timer</title>
+    <title>Game</title>
     <script>
         function setClientTime() {
             var currentTime = new Date();
@@ -22,12 +22,11 @@
 <p>Client time: <span id='ClientTime'></span></p>
 <p>Server time: ${serverTime}</p>
 <p>Server time: ${message}</p>
-<p>User Id: ${user.getId()}</p>
-<p>User Name: ${user.getUsername()}</p>
+<p>User Id: ${user.getUserId()}</p>
+<p>User Name: ${user.getLogin()}</p>
 <p></p>
 <p>Информация о сессии:</p>
-<p>Session sessionId: ${session.getAttribute("sessionId")}</p>
-<p>Session getId: ${session.getId()}</p>
+<p>Session sessionId: ${user.getSessionId()}</p>
 <p><a href="exit">Выход</a></p>
 </body>
 </html>

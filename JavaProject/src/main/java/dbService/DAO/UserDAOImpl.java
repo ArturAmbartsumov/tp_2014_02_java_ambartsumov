@@ -1,6 +1,6 @@
 package dbService.DAO;
 
-import dbService.HibernateUtil;
+import dbService.DatabaseService;
 import dbService.models.UserDataSet;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
@@ -17,7 +17,7 @@ public class UserDAOImpl implements UserDAO {
     public void addUser(UserDataSet user) throws SQLException {
         Session session = null;
         try {
-            session = HibernateUtil.getSessionFactory().openSession();
+            session = DatabaseService.getSessionFactory().openSession();
             session.beginTransaction();
             session.save(user);
             session.getTransaction().commit();
@@ -36,7 +36,7 @@ public class UserDAOImpl implements UserDAO {
     public void updateUser(UserDataSet user) throws SQLException {
         Session session = null;
         try {
-            session = HibernateUtil.getSessionFactory().openSession();
+            session = DatabaseService.getSessionFactory().openSession();
             session.beginTransaction();
             session.update(user);
             session.getTransaction().commit();
@@ -55,7 +55,7 @@ public class UserDAOImpl implements UserDAO {
         Session session = null;
         UserDataSet currentUser = null;
         try {
-            session = HibernateUtil.getSessionFactory().openSession();
+            session = DatabaseService.getSessionFactory().openSession();
             Criteria criteria = session.createCriteria(UserDataSet.class);
             criteria.add(Restrictions.eq("username", user.getUsername()));
             currentUser = (UserDataSet) criteria.uniqueResult();
@@ -76,7 +76,7 @@ public class UserDAOImpl implements UserDAO {
         Session session = null;
         UserDataSet user = null;
         try {
-            session = HibernateUtil.getSessionFactory().openSession();
+            session = DatabaseService.getSessionFactory().openSession();
             user = (UserDataSet) session.load(UserDataSet.class, user_id);
         } catch (Exception e) {
             System.out.println("Ошибка в функции getUserById" + e.getMessage());
@@ -94,7 +94,7 @@ public class UserDAOImpl implements UserDAO {
         Session session = null;
         UserDataSet user = null;
         try {
-            session = HibernateUtil.getSessionFactory().openSession();
+            session = DatabaseService.getSessionFactory().openSession();
             Criteria criteria = session.createCriteria(UserDataSet.class);
             criteria.add(Restrictions.eq("username", name));
             user = (UserDataSet) criteria.uniqueResult();
@@ -114,7 +114,7 @@ public class UserDAOImpl implements UserDAO {
         Session session = null;
         UserDataSet user = null;
         try {
-            session = HibernateUtil.getSessionFactory().openSession();
+            session = DatabaseService.getSessionFactory().openSession();
             Criteria criteria = session.createCriteria(UserDataSet.class);
             criteria.add(Restrictions.eq("email", email));
             user = (UserDataSet) criteria.uniqueResult();
@@ -134,7 +134,7 @@ public class UserDAOImpl implements UserDAO {
         Session session = null;
         UserDataSet user = null;
         try {
-            session = HibernateUtil.getSessionFactory().openSession();
+            session = DatabaseService.getSessionFactory().openSession();
             Criteria criteria = session.createCriteria(UserDataSet.class);
             criteria.add(Restrictions.eq("username", name))
                     .add(Restrictions.eq("password", password));
@@ -155,7 +155,7 @@ public class UserDAOImpl implements UserDAO {
         Session session = null;
         List users = new ArrayList<UserDataSet>();
         try {
-            session = HibernateUtil.getSessionFactory().openSession();
+            session = DatabaseService.getSessionFactory().openSession();
             users = (ArrayList<UserDataSet>) session.createCriteria(UserDataSet.class).list();
         } catch (Exception e) {
             System.out.println("Ошибка в функции getAllUsers" + e.getMessage());
@@ -172,7 +172,7 @@ public class UserDAOImpl implements UserDAO {
     public void deleteUser(UserDataSet user) throws SQLException {
         Session session = null;
         try {
-            session = HibernateUtil.getSessionFactory().openSession();
+            session = DatabaseService.getSessionFactory().openSession();
             session.beginTransaction();
             session.delete(user);
             session.getTransaction().commit();

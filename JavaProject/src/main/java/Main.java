@@ -1,4 +1,6 @@
+import dbService.AccountService;
 import frontend.Frontend;
+import messageSistem.MessageSystem;
 import org.eclipse.jetty.rewrite.handler.RedirectRegexRule;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.server.Handler;
@@ -17,7 +19,12 @@ import java.util.LinkedHashMap;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        Frontend frontend = new Frontend();
+        MessageSystem messageSystem = new MessageSystem();
+
+        AccountService accountService = new AccountService(messageSystem);
+        Thread accountServiceThread = new Thread(accountService);
+
+        Frontend frontend = new Frontend(messageSystem);
         Thread frontendThread = new Thread(frontend);
 
         Server server = new Server(8080);
@@ -31,10 +38,7 @@ public class Main {
         handlers.setHandlers(new Handler[]{resource_handler, context});
         server.setHandler(handlers);
 
-        LinkedHashMap<Integer, Integer> a = new LinkedHashMap<Integer, Integer>();
-
-
-
+        accountServiceThread.start();
         frontendThread.start();
         server.start();
         server.join();

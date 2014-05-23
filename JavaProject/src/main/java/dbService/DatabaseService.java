@@ -9,7 +9,7 @@ import org.hibernate.service.ServiceRegistry;
  * Created by artur on 11.03.14.
  */
 
-public class HibernateUtil {
+public class DatabaseService {
 
     private static final SessionFactory sessionFactory;
 
@@ -22,7 +22,7 @@ public class HibernateUtil {
             ServiceRegistry serviceRegistry = builder.build();
             sessionFactory = conf.buildSessionFactory(serviceRegistry);
         } catch (Throwable ex) {
-            System.out.println("/nВыброс исключения в HibernateUtil/n");
+            System.out.println("/nВыброс исключения в DatabaseService/n");
             System.err.println("Initial SessionFactory creation failed." + ex);
             throw new ExceptionInInitializerError(ex);
         }

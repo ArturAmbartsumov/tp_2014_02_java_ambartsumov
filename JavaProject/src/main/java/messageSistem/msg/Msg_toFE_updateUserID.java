@@ -8,15 +8,15 @@ import messageSistem.Address;
  */
 public class Msg_toFE_updateUserID extends Msg_toFE {
     private String sessionId;
-    private Long id;
+    private Integer id;
 
-    public Msg_toFE_updateUserID(Address from, Address to, String sessionId, Long id) {
+    public Msg_toFE_updateUserID(Address from, Address to, String sessionId, Integer id) {
         super(from, to);
         this.sessionId = sessionId;
         this.id = id;
     }
 
     public void exec(Frontend frontend) {
-        //frontend.setId(sessionId, id);
+        frontend.setId(sessionId, id);
     }
 }

@@ -11,6 +11,6 @@
     <property name="connection.password">admin</property>
       <!-- DB schema will be updated if needed -->
     <!-- <property name="hbm2ddl.auto">validate</property> -->
-      <mapping class="models.UserDataSet"/>
+      <mapping class="dbService.models.UserDataSet"/>
   </session-factory>
 </hibernate-configuration>
