@@ -8,9 +8,13 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
 /**
  * Created by artur on 15.02.14.
  */
+
 public class Main {
     public static void main(String[] args) throws Exception {
         Frontend frontend = new Frontend();
@@ -27,9 +31,15 @@ public class Main {
         handlers.setHandlers(new Handler[]{resource_handler, context});
         server.setHandler(handlers);
 
+        LinkedHashMap<Integer, Integer> a = new LinkedHashMap<Integer, Integer>();
+
+
 
         frontendThread.start();
         server.start();
         server.join();
     }
 }
+
+//простые типы, их размер, методы класса обджект, автоупаковка, дженерик
+//аннатации, public

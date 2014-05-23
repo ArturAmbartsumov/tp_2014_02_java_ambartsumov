@@ -1,6 +1,6 @@
-package dbService;
+package dbService.DAO;
 
-import models.UserDataSet;
+import dbService.models.UserDataSet;
 import java.sql.SQLException;
 import java.util.*;
 

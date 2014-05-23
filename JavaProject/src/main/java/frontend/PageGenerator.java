@@ -1,4 +1,4 @@
-package templater;
+package frontend;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -21,7 +21,7 @@ public class PageGenerator {
     public static String getPage(String filename, Map<String, Object> data) {
         Writer stream = new StringWriter();
         try {
-            Template template = CFG.getTemplate(HTML_DIR + File.separator + filename);
+            Template template = CFG.getTemplate(HTML_DIR + File.separator + filename); //сепаратор?
             template.process(data, stream);
         } catch (IOException | TemplateException e) {
             e.printStackTrace();

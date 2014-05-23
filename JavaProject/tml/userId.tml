@@ -28,6 +28,6 @@
 <p>Информация о сессии:</p>
 <p>Session sessionId: ${session.getAttribute("sessionId")}</p>
 <p>Session getId: ${session.getId()}</p>
-<p>Session getCreationTime(): ${session.getCreationTime()}</p>
+<p><a href="exit">Выход</a></p>
 </body>
 </html>

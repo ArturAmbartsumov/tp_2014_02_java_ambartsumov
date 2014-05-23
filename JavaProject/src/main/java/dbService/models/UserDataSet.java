@@ -1,4 +1,4 @@
-package models;
+package dbService.models;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -6,7 +6,7 @@ import java.sql.Timestamp;
 /**
  * Created by artur on 11.03.14.
  */
-@Entity
+@Entity  //@Entity говорит о том что этот объект будет обрабатываться hibernate
 @Table(name = "user", schema = "", catalog = "Java_db")
 public class UserDataSet {
     private Integer id;
@@ -19,11 +19,11 @@ public class UserDataSet {
 
     }
 
-    public UserDataSet(String username,
+    /*public UserDataSet(String username,
                        String password) {
         setUsername(username);
         setPassword(password);
-    }
+    }*/
 
     public UserDataSet(String username,
                        String email,
@@ -40,7 +40,7 @@ public class UserDataSet {
     }
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy=GenerationType.IDENTITY) //как свою функцию передать для генерации
     @Column(name = "id", nullable = false, insertable = true, updatable = true, length = 10, precision = 0)
     public Integer getId() {
         return id;
@@ -50,7 +50,7 @@ public class UserDataSet {
         this.id = id;
     }
 
-    @Basic
+    @Basic // @Basic allows to define that a single field is not loaded immediately but lazy when the getter is called for this field
     @Column(name = "username", nullable = false, insertable = true, updatable = true, length = 16, precision = 0)
     public String getUsername() {
         return username;
@@ -104,21 +104,12 @@ public class UserDataSet {
         UserDataSet that = (UserDataSet) o;
 
         if (id != that.id) return false;
-        if (createTime != null ? !createTime.equals(that.createTime) : that.createTime != null) return false;
-        if (email != null ? !email.equals(that.email) : that.email != null) return false;
-        if (password != null ? !password.equals(that.password) : that.password != null) return false;
-        if (username != null ? !username.equals(that.username) : that.username != null) return false;
 
         return true;
     }
 
-    @Override
+    @Override //переопределяет метод в родителе
     public int hashCode() {
-        Integer result = id;
-        result = 31 * result + (username != null ? username.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (createTime != null ? createTime.hashCode() : 0);
-        return result.intValue();
+        return id.intValue();
     }
 }

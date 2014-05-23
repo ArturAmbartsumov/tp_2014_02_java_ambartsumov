@@ -1,9 +1,10 @@
 package dbService;
 
 
+import dbService.DAO.UserDAOImpl;
 import exceptions.AccountServiceException;
 import exceptions.EmptyDataException;
-import models.UserDataSet;
+import dbService.models.UserDataSet;
 import java.sql.SQLException;
 
 /**

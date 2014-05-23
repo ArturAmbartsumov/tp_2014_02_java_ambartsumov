@@ -1,11 +1,11 @@
-package dbService;
+package dbService.DAO;
 
-import models.UserDataSet;
+import dbService.HibernateUtil;
+import dbService.models.UserDataSet;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 
-import javax.swing.*;
 import java.sql.SQLException;
 import java.util.*;
 

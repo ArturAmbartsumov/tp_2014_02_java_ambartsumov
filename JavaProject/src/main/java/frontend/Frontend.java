@@ -3,17 +3,14 @@ package frontend;
 import dbService.AccountService;
 import exceptions.AccountServiceException;
 import exceptions.EmptyDataException;
-import models.UserDataSet;
-import templater.PageGenerator;
+import dbService.models.UserDataSet;
 
-import java.sql.SQLException;
 import java.util.*;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.swing.*;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -26,6 +23,8 @@ import java.lang.Thread;
  */
 public class Frontend extends HttpServlet implements Runnable{
 
+    private Map<String, UserSession> sessionIdToUserSession = new HashMap<>();
+
     int handleCount = 0;
     private AccountService accauntService = new  AccountService();
 
@@ -37,11 +36,12 @@ public class Frontend extends HttpServlet implements Runnable{
         return formatter.format(date);
     }
 
+    @Override
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html;charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
-        Map<String, Object> pageVariables = new HashMap<>();
+        Map<String, Object> pageVariables = new HashMap<>(); //почему хеш?
 
         handleCount++;
 
@@ -60,9 +60,15 @@ public class Frontend extends HttpServlet implements Runnable{
             return;
         }
 
+        if (request.getPathInfo().equals("/exit")) {
+            exit(request, response, pageVariables);
+            return;
+        }
+
         response.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 
+    @Override
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html;charset=utf-8");
@@ -80,6 +86,7 @@ public class Frontend extends HttpServlet implements Runnable{
             return;
         }
 
+
         response.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 
@@ -91,7 +98,6 @@ public class Frontend extends HttpServlet implements Runnable{
         UserDataSet user;
         try {
             user = accauntService.authorization(login, password);
-            session.setAttribute("sessionId", userIdGenerator.getAndIncrement());
             session.setAttribute("user", user);
             response.sendRedirect("/userid");
 
@@ -150,6 +156,12 @@ public class Frontend extends HttpServlet implements Runnable{
         }
     }
 
+    private void exit(HttpServletRequest request,
+                      HttpServletResponse response,
+                      Map<String, Object> pageVariables) throws ServletException, IOException {
+
+    }
+
     private void userId(HttpServletRequest request,
                         HttpServletResponse response,
                         Map<String, Object> pageVariables) throws ServletException, IOException {
@@ -174,7 +186,7 @@ public class Frontend extends HttpServlet implements Runnable{
         while (true) {
             try {
                 //System.out.println(handleCount);
-                Thread.sleep(5000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 return;
             }
