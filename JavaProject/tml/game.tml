@@ -23,10 +23,10 @@
 <p>Server time: ${serverTime}</p>
 <p>Server time: ${message}</p>
 <p>User Id: ${user.getUserId()}</p>
-<p>User Name: ${user.getLogin()}</p>
+<p>User Name: ${user.getUserName()}</p>
 <p></p>
 <p>Информация о сессии:</p>
-<p>Session sessionId: ${user.getSessionId()}</p>
+<p>SessionId: ${user.getSessionId()}</p>
 <p><a href="exit">Выход</a></p>
 </body>
 </html>

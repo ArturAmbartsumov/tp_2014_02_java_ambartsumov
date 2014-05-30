@@ -2,15 +2,12 @@ package frontend;
 
 
 import dbService.AccountService;
-import exceptions.AccountServiceException;
-import exceptions.EmptyDataException;
-import dbService.models.UserDataSet;
-import exceptions.WrongDataException;
 import messageSistem.Address;
 import messageSistem.MessageSystem;
 import messageSistem.Sleeper;
 import messageSistem.Subscriber;
-import messageSistem.msg.Msg_toAS_loginUser;
+import messageSistem.msg.Msg_toAS_auth;
+import messageSistem.msg.Msg_toAS_registr;
 
 import java.util.*;
 import javax.servlet.ServletException;
@@ -29,15 +26,12 @@ import java.lang.Thread;
  */
 public class Frontend extends HttpServlet implements Subscriber, Runnable{
 
-    private AccountService accauntService;
     private Map<String, UserSession> sessionIdToUserSession = new HashMap<>();
     private Address address;
-    private int handleCount;
     private MessageSystem messageSystem;
     private DateFormat formatter = new SimpleDateFormat("HH.mm.ss");
 
     public Frontend(MessageSystem ms) {
-        this.handleCount = 0;
         this.messageSystem = ms;
         this.address = new Address();
         ms.addService(this);
@@ -47,7 +41,6 @@ public class Frontend extends HttpServlet implements Subscriber, Runnable{
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
-            //System.out.println("gdhf");
             messageSystem.execForSubscriber(this);
             Sleeper.sleep(Sleeper.TICK);
         }
@@ -63,24 +56,42 @@ public class Frontend extends HttpServlet implements Subscriber, Runnable{
         return messageSystem;
     }
 
-    public void setId(String sessionId, Integer userId) {
+    public void successAuth(String sessionId, Integer userId, String name) {
         UserSession userSession = sessionIdToUserSession.get(sessionId);
         if (userSession == null) {
             System.out.append("Can't find user session for: ").append(sessionId);
             return;
         }
         userSession.setUserId(userId);
+        userSession.setUserName(name);
+        userSession.setAuthStatus(AuthStatus.OK);
     }
 
-    public void setError(String sessionId, String errorType) {
+    public void setAuthError(String sessionId, AuthStatus status) {
         UserSession userSession = sessionIdToUserSession.get(sessionId);
         if (userSession == null) {
             System.out.append("Can't find user session for: ").append(sessionId);
             return;
         }
-        if (errorType.equals("AccountServiceError")) userSession.setError(true);
-        if (errorType.equals("EmptyFormError")) userSession.setEmpty(true);
-        if (errorType.equals("WrongDataError")) userSession.setWrong(true);
+        userSession.setAuthStatus(status);
+    }
+
+    public void successReg(String sessionId) {
+        UserSession userSession = sessionIdToUserSession.get(sessionId);
+        if (userSession == null) {
+            System.out.append("Can't find user session for: ").append(sessionId);
+            return;
+        }
+        userSession.setRegStatus(RegStatus.OK);
+    }
+
+    public void setRegError(String sessionId, RegStatus status) {
+        UserSession userSession = sessionIdToUserSession.get(sessionId);
+        if (userSession == null) {
+            System.out.append("Can't find user session for: ").append(sessionId);
+            return;
+        }
+        userSession.setRegStatus(status);
     }
 
     @Override
@@ -89,8 +100,6 @@ public class Frontend extends HttpServlet implements Subscriber, Runnable{
         response.setContentType("text/html;charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
         Map<String, Object> pageVariables = new HashMap<>();
-
-        this.handleCount++;
 
         if (request.getPathInfo().equals("/authform")) {
             authForm(request, response, pageVariables);
@@ -113,7 +122,7 @@ public class Frontend extends HttpServlet implements Subscriber, Runnable{
         }
 
         if (request.getPathInfo().equals("/exit")) {
-            exit(request, response, pageVariables);
+            exit(request, response);
             return;
         }
 
@@ -125,8 +134,6 @@ public class Frontend extends HttpServlet implements Subscriber, Runnable{
                        HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html;charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
-
-        handleCount++;
 
         if (request.getPathInfo().equals("/authorization")) {
             authorization(request, response);
@@ -170,61 +177,15 @@ public class Frontend extends HttpServlet implements Subscriber, Runnable{
         }
 
         String sessionId = request.getSession().getId();
-        UserSession userSession = new UserSession(sessionId, login, messageSystem.getAddressService());
+        UserSession userSession = new UserSession(sessionId, Action.AUTH);
         sessionIdToUserSession.put(sessionId, userSession);
 
         Address frontendAddress = getAddress();
         Address accountServiceAddress = messageSystem.getAddressService().getAccountService();
 
-        messageSystem.sendMessage(new Msg_toAS_loginUser(frontendAddress, accountServiceAddress,
+        messageSystem.sendMessage(new Msg_toAS_auth(frontendAddress, accountServiceAddress,
                 login, password, sessionId));
         response.sendRedirect("/waiting");
-    }
-
-    private void waitingScreen(HttpServletRequest request,
-                               HttpServletResponse response,
-                               Map<String, Object> pageVariables) throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        UserSession userSession = sessionIdToUserSession.get(session.getId());
-        if (userSession == null) {
-            response.sendRedirect("/authform");
-        }
-        else {
-            if (userSession.isAuthorized()) {
-                response.sendRedirect("/game");
-                return;
-            }
-            if (userSession.isWrong()) {
-                session.setAttribute("message", "Неверный логин или пароль!");
-                response.sendRedirect("/authform");
-                return;
-            }
-            if (userSession.isError()) {
-                session.setAttribute("message", "Ошибка базы данных!");
-                response.sendRedirect("/authform");
-                return;
-            }
-            pageVariables.put("refreshPeriod", "1000");
-            response.getWriter().println(PageGenerator.getPage("waiting.tml", pageVariables));
-        }
-    }
-
-    private void registration(HttpServletRequest request,
-                               HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        String login = request.getParameter("login");
-        String email = request.getParameter("email");
-        String password = request.getParameter("password");
-        try {
-            this.accauntService.registration(login, email, password);
-            session.setAttribute("message", "регистрация прошла успешно!\nТеперь авторизируйтесь.");
-            response.sendRedirect("/authform");
-
-        }
-        catch (AccountServiceException | EmptyDataException | WrongDataException e) {
-            session.setAttribute("message", e.getMessage());
-            response.sendRedirect("/regform");
-        }
     }
 
     private void regForm(HttpServletRequest request,
@@ -242,9 +203,87 @@ public class Frontend extends HttpServlet implements Subscriber, Runnable{
         }
     }
 
+    private void registration(HttpServletRequest request,
+                               HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        String login = request.getParameter("login");
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
+
+        if (!checkRegForm(login, password, email)) {
+            session.setAttribute("message", "Заполните форму!");
+            response.sendRedirect("/authform");
+            return;
+        }
+
+        String sessionId = request.getSession().getId();
+        UserSession userSession = new UserSession(sessionId, Action.REG);
+        sessionIdToUserSession.put(sessionId, userSession);
+
+        Address frontendAddress = getAddress();
+        Address accountServiceAddress = messageSystem.getAddressService().getAccountService();
+
+        messageSystem.sendMessage(new Msg_toAS_registr(frontendAddress, accountServiceAddress,
+                login, password, email, sessionId));
+        response.sendRedirect("/waiting");
+    }
+
+    private void waitingScreen(HttpServletRequest request,
+                               HttpServletResponse response,
+                               Map<String, Object> pageVariables) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        UserSession userSession = sessionIdToUserSession.get(session.getId());
+        if (userSession == null) {
+            response.sendRedirect("/");
+            System.out.println("\nОшибка: не найдена сессия");
+        }
+        else {
+            if (userSession.getAuthStatus() != null) {
+                if (userSession.getAuthStatus() == AuthStatus.OK) {
+                    response.sendRedirect("/game");
+                    return;
+                }
+                if (userSession.getAuthStatus() == AuthStatus.WRONG_DATA) {
+                    session.setAttribute("message", "Неверный логин или пароль!");
+                    response.sendRedirect("/authform");
+                    return;
+                }
+                if (userSession.getAuthStatus() == AuthStatus.SQL_ERROR) {
+                    session.setAttribute("message", "Ошибка базы данных!");
+                    response.sendRedirect("/authform");
+                    return;
+                }
+                pageVariables.put("refreshPeriod", "1000");
+                response.getWriter().println(PageGenerator.getPage("waiting.tml", pageVariables));
+                return;
+            }
+
+            if (userSession.getRegStatus() != null) {
+                if (userSession.getRegStatus() == RegStatus.OK) {
+                    sessionIdToUserSession.remove(session.getId());
+                    response.sendRedirect("/authform");
+                    return;
+                }
+                if (userSession.getRegStatus() == RegStatus.DUPLICATE) {
+                    session.setAttribute("message", "Такой пользователь уже существует!");
+                    response.sendRedirect("/regform");
+                    return;
+                }
+                if (userSession.getRegStatus() == RegStatus.SQL_ERROR) {
+                    session.setAttribute("message", "Ошибка базы данных!");
+                    response.sendRedirect("/regform");
+                    return;
+                }
+                pageVariables.put("refreshPeriod", "1000");
+                response.getWriter().println(PageGenerator.getPage("waiting.tml", pageVariables));
+                return;
+            }
+            response.sendRedirect("/");
+        }
+    }
+
     private void exit(HttpServletRequest request,
-                      HttpServletResponse response,
-                      Map<String, Object> pageVariables) throws ServletException, IOException {
+                      HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
         sessionIdToUserSession.remove(session.getId());
         response.sendRedirect("/");
@@ -255,10 +294,10 @@ public class Frontend extends HttpServlet implements Subscriber, Runnable{
                         Map<String, Object> pageVariables) throws ServletException, IOException {
         HttpSession session = request.getSession();
         UserSession userSession = sessionIdToUserSession.get(session.getId());
-        if (!userSession.isAuthorized() || userSession == null) {
+        if (userSession == null || !(userSession.getAuthStatus() == AuthStatus.OK)) {
             pageVariables.put("message", "Вы не авторизированы!");
-
-            pageVariables.put("user", new UserSession("no session", "Anonim", null));
+            UserSession anonim = new UserSession(session.getId(), Action.ANONYM);
+            pageVariables.put("user", anonim);
         } else {
             pageVariables.put("message", "Вы авторизированы!");
             pageVariables.put("user", userSession);

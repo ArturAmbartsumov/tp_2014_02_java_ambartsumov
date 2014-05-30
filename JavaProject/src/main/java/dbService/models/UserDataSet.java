@@ -19,24 +19,12 @@ public class UserDataSet {
 
     }
 
-    /*public UserDataSet(String username,
-                       String password) {
-        setUsername(username);
-        setPassword(password);
-    }*/
-
     public UserDataSet(String username,
                        String email,
                        String password) {
         setUsername(username);
         setEmail(email);
         setPassword(password);
-    }
-
-    public UserDataSet(Integer id,
-                       String username) {
-        setId(id);
-        setUsername(username);
     }
 
     @Id
@@ -110,6 +98,6 @@ public class UserDataSet {
 
     @Override //переопределяет метод в родителе
     public int hashCode() {
-        return id.intValue();
+        return id;
     }
 }

@@ -22,7 +22,7 @@ public class UserDAOImpl implements UserDAO {
             session.save(user);
             session.getTransaction().commit();
         } catch (Exception e) {
-            System.out.println("Ошибка в функции addUser" + e.getMessage());
+            System.out.println("Ошибка в функции addUser " + e.getMessage());
             throw e;
         } finally {
             if (session != null && session.isOpen()) {

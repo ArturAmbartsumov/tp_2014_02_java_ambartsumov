@@ -15,7 +15,6 @@
       <column name="password" sqlType="VARCHAR" length="32" precision="0" nullable="true" jdbcType="12"/>
       <column name="create_time" sqlType="TIMESTAMP" length="19" precision="0" nullable="false" jdbcType="93" def="Q1VSUkVOVF9USU1FU1RBTVA=" version="true"/>
       <primary-key name="PRIMARY" columns="id"/>
-      <index name="unique_email" unique="true" columns="email"/>
       <index name="unique_id" unique="true" columns="id"/>
       <index name="unique_username" unique="true" columns="username"/>
     </table>

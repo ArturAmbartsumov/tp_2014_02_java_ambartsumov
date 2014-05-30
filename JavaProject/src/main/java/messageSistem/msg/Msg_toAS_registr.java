@@ -1,6 +1,10 @@
 package messageSistem.msg;
 
 import dbService.AccountService;
+import exceptions.AccountServiceException;
+import exceptions.EmptyDataException;
+import exceptions.WrongDataException;
+import frontend.RegStatus;
 import messageSistem.Address;
 
 /**
@@ -21,14 +25,18 @@ public class Msg_toAS_registr extends Msg_toAS {
     }
 
     public void exec(AccountService accountService) {
-        /*try {
-            Long id = accountService.tryRegister(login, password, email);
-            accountService.getMessageSystem()
-                    .sendMessage(new MsgUpdateUserId(getTo(), getFrom(), sessionId, id));
+        try {
+            accountService.registration(login, email, password);
+            accountService.getMessageSystem().sendMessage(new Msg_toFE_successReg(getTo(), getFrom(), sessionId));
         }
-        catch (DBException e) {
-            accountService.getMessageSystem()
-                    .sendMessage(new MsgDBError(getTo(), getFrom(), sessionId));
-        }*/
+        catch (AccountServiceException e) {
+            accountService.getMessageSystem().sendMessage(new Msg_toFE_regError(getTo(), getFrom(), sessionId, RegStatus.SQL_ERROR));
+        }
+        catch (WrongDataException e) {
+            accountService.getMessageSystem().sendMessage(new Msg_toFE_regError(getTo(), getFrom(), sessionId, RegStatus.DUPLICATE));
+        }
+        catch (EmptyDataException e) {
+            accountService.getMessageSystem().sendMessage(new Msg_toFE_regError(getTo(), getFrom(), sessionId, RegStatus.EMPTY_DATA));
+        }
     }
 }

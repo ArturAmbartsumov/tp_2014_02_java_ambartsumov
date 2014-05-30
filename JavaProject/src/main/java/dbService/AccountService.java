@@ -85,10 +85,8 @@ public class AccountService implements Subscriber, Runnable {
         try {
             UserDataSet checkUser = userDAO.getUserByName(login);
             if (checkUser != null)
-                throw new AccountServiceException("Ошибка: найден пользователь с таким же именем!");
-            UserDataSet checkEmail = userDAO.getUserByEmail(email);
-            if (checkEmail != null)
-                throw new AccountServiceException("Ошибка: найден пользователь с таким же маилом!");
+                throw new WrongDataException("Ошибка: найден пользователь с таким же именем!");
+
             UserDataSet user = new UserDataSet(login, email, password);
             userDAO.addUser(user);
         } catch (SQLException e) {

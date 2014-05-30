@@ -1,7 +1,6 @@
 package frontend;
 
 import messageSistem.Address;
-import messageSistem.AddressService;
 
 /**
  * Created by artur on 23.05.14.
@@ -9,20 +8,34 @@ import messageSistem.AddressService;
 public class UserSession {
     private Address accountService;
 
-    private String login;
+    private String userName;
     private String sessionId;
     private Integer userId;
-    private boolean isWrong = false;
-    private boolean isError = false;
-    private boolean isEmpty = false;
+    private RegStatus regStatus;
+    private AuthStatus authStatus;
 
-    public UserSession(String sessionId, String name, AddressService addressService) {
-        this.sessionId = sessionId;
-        this.login = name;
+    public UserSession(String sessionId, Action action) {
+        if (action == Action.ANONYM) {
+            this.sessionId = "Сессия не открыта";
+            this.userName = "Аноним";
+            this.userId = 0;
+        }
+        if (action == Action.AUTH) {
+            this.sessionId = sessionId;
+            setAuthStatus(AuthStatus.WAITING);
+        }
+        if (action == Action.REG) {
+            this.sessionId = sessionId;
+            setRegStatus(RegStatus.WAITING);
+        }
     }
 
-    public String getLogin(){
-        return login;
+    public String getUserName(){
+        return userName;
+    }
+
+    public void setUserName(String name) {
+        userName = name;
     }
 
     public String getSessionId() {
@@ -33,38 +46,27 @@ public class UserSession {
         return userId;
     }
 
+    public RegStatus getRegStatus() {
+        return regStatus;
+    }
+
+    public void setRegStatus(RegStatus status) {
+        regStatus = status;
+        authStatus = null;
+    }
+
+    public AuthStatus getAuthStatus() {
+        return authStatus;
+    }
+
+    public void setAuthStatus(AuthStatus status) {
+        authStatus = status;
+        regStatus = null;
+    }
+
     public void setUserId(Integer userId) {
         if (userId == null)
-            isWrong = true;
-
+            this.authStatus = AuthStatus.WRONG_DATA;
         this.userId = userId;
-    }
-
-    public boolean isWrong() {
-        return isWrong;
-    }
-
-    public void setWrong(boolean isWrong) {
-        this.isWrong = isWrong;
-    }
-
-    public boolean isEmpty() {
-        return isEmpty;
-    }
-
-    public void setEmpty(boolean isEmpty) {
-        this.isEmpty = isEmpty;
-    }
-
-    public boolean isError() {
-        return isError;
-    }
-
-    public void setError(boolean isError) {
-        this.isError = isError;
-    }
-
-    public boolean isAuthorized() {
-        return !isWrong() && !isError() && !isEmpty() && getUserId() != null;
     }
 }
